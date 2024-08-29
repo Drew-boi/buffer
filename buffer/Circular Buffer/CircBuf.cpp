@@ -1,14 +1,14 @@
 #include "CircBuf.h"
 
 CircBuf::CircBuf(size_t reserve) { // Number of elements you want it to be able to hold to start with.
+    buffer_capacity = 0;
     while (buffer_capacity < reserve) {
         buffer_capacity += CHUNK;
     }
     buffer = new char[buffer_capacity];
     buffer_size = 0;
-    front_index = 0;
-    back_index = 0;
-    behind = false;
+    head = 0;
+    tail = 0;
 }
 CircBuf::~CircBuf() {
     delete[] buffer;
@@ -21,22 +21,25 @@ size_t CircBuf::capacity(){
 }
 
 void CircBuf::insert(char c){
-    if (front_index == buffer_capacity - 1) {
+    if (head == buffer_capacity) {
         if (buffer_size == buffer_capacity) {
             expand();
-            buffer[front_index] = c;
+            buffer[head] = c;
+            head++;
+            buffer_size++;
         }
         else {
-            buffer[front_index] = c;
-            front_index = 0;
+            buffer[head] = c;
+            head = 0;
+            buffer_size++;
         }
     }
     else {
-        if (buffer_size == buffer_capacity and front_index == back_index) {
+        if (buffer_size == buffer_capacity and head == tail) {
             expand();
         }
-        buffer[front_index] = c;
-        front_index++;
+        buffer[head] = c;
+        head++;
         buffer_size++;
     }
 }
@@ -44,52 +47,75 @@ void CircBuf::insert(char c){
 void CircBuf::insert(const char* c, size_t sz) {
     size_t temp_counter = 0;
     while (temp_counter < sz) {
-        if (front_index == buffer_capacity - 1) {
+        if (head == buffer_capacity) {
             if (buffer_size == buffer_capacity) {
                 expand();
-                buffer[front_index] = c[temp_counter];
+                buffer[head] = c[temp_counter];
+                head++;
+                buffer_size++;
             }
             else {
-                buffer[front_index] = c[temp_counter];
-                front_index = 0;
+                buffer[head] = c[temp_counter];
+                head = 0;
+                buffer_size++;
             }
         }
         else {
-            if (buffer_size == buffer_capacity and front_index == back_index) {
+            if (buffer_size == buffer_capacity and head == tail) {
                 expand();
             }
-            buffer[front_index] = c[temp_counter];
-            front_index++;
+            buffer[head] = c[temp_counter];
+            head++;
             buffer_size++;
         }
         temp_counter += 1;
     }
 }
 void CircBuf::insert(const string& str){
-    for(const char& c : str) {
-        if (front_index == buffer_capacity - 1) {
+    for(const char c : str) {
+        if (head == buffer_capacity) {
             if (buffer_size == buffer_capacity) {
                 expand();
-                buffer[front_index] = c;
+                buffer[head] = c;
+                head++;
+                buffer_size++;
             }
             else {
-                buffer[front_index] = c;
-                front_index = 0;
+                buffer[head] = c;
+                head = 0;
+                buffer_size++;
             }
         }
         else {
-            if (buffer_size == buffer_capacity and front_index == back_index) {
+            if (buffer_size == buffer_capacity and head == tail) {
                 expand();
             }
-            buffer[front_index] = c;
-            front_index++;
+            buffer[head] = c;
+            head++;
             buffer_size++;
         }
     }
 }
+
 char CircBuf::get(){
-    return ' ';
+    char c = '\0';
+    if (buffer_size == 0) {
+        return c;
+    }
+    else {
+        c = buffer[tail];
+        if (tail == buffer_capacity) {
+            tail = 0;
+            buffer_size--;
+        }
+        else {
+            tail++;
+            buffer_size--;
+        }
+    }
+    return c;
 }
+
 string CircBuf::get(size_t i){
     return "";
 }
@@ -109,7 +135,7 @@ void CircBuf::shrink() {
 void CircBuf::expand() {
     buffer_capacity += CHUNK;
     char* temp = new char[buffer_capacity];
-    size_t temp_counter = back_index;
+    size_t temp_counter = tail;
     size_t i;
     for (i = 0; i < buffer_size; i++) {
         temp[i] = buffer[temp_counter];
@@ -120,8 +146,8 @@ void CircBuf::expand() {
             temp_counter = 0;
         }
     }
-    front_index = i;
-    back_index = 0;
+    head = i;
+    tail = 0;
     delete[] buffer;
     buffer = temp;
 }

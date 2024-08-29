@@ -11,8 +11,8 @@ class CircBuf {
     char* buffer;
     size_t buffer_size;
     size_t buffer_capacity;
-    size_t front_index;
-    size_t back_index;
+    size_t head;
+    size_t tail;
     void expand();
 	
 public:

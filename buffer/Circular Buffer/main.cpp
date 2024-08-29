@@ -6,7 +6,14 @@ using namespace std;
 
 int main()
 {
-	CircBuf ab(8);
+	CircBuf ab;
+//    string str{"hellomyfriend you are supercool"};
+//    ab.insert(str);
+//    ab.insert('c');
+//    const char* c = new char[4] {'a', 'b', 'c', 'd'};
+//    ab.insert(c);
+    
+    
 	test_(ab.capacity() == 0);
 	ab.insert("ONE", 3);
 	test_(ab.size() == 3);
