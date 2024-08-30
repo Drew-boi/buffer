@@ -1,4 +1,11 @@
 #include "CircBuf.h"
+///This program was an absolute nightmare for me.  I first had to figure out how to use a pointer and
+/// a dynamically allocated array to create different sized array. I then spent quite a lot of time thinking
+/// through my insert functions, which I was eventually able to figure out. The main issues here were
+/// out  the proper indexing of the array. I also had to figure out when I would need to expand the array.
+/// I then spent awhile on my examine function, as it was hard to figure out all of the cases I would need
+/// in order to get it to properly insert the dashes. My final problem was that I forgot to expand the size
+/// of my temporary array while expanding the array, so I was writing out of bounds.
 
 CircBuf::CircBuf(size_t reserve) { // Number of elements you want it to be able to hold to start with.
     buffer_capacity = 0;
@@ -35,7 +42,7 @@ void CircBuf::insert(char c){
         }
     }
     else {
-        if (buffer_size == buffer_capacity and head == tail) {
+        if (buffer_size == buffer_capacity) {
             expand();
         }
         buffer[head] = c;
@@ -61,7 +68,7 @@ void CircBuf::insert(const char* c, size_t sz) {
             }
         }
         else {
-            if (buffer_size == buffer_capacity and head == tail) {
+            if (buffer_size == buffer_capacity) {
                 expand();
             }
             buffer[head] = c[temp_counter];
@@ -87,7 +94,7 @@ void CircBuf::insert(const string& str){
             }
         }
         else {
-            if (buffer_size == buffer_capacity and head == tail) {
+            if (buffer_size == buffer_capacity) {
                 expand();
             }
             buffer[head] = c;
@@ -222,7 +229,8 @@ void CircBuf::shrink() {
 }   // Reduces the unused space in the buffer.
 
 void CircBuf::expand() {
-    char* temp = new char[buffer_capacity];
+    size_t temp_cap = buffer_capacity + CHUNK;
+    char* temp = new char[temp_cap];
     size_t temp_counter = tail;
     size_t i;
     for (i = 0; i < buffer_size; i++) {
