@@ -28,8 +28,8 @@ size_t CircBuf::capacity(){
 }
 
 void CircBuf::insert(char c){
-    if (head == buffer_capacity) {
-        if (buffer_size == buffer_capacity - 1) {
+    if (head == buffer_capacity) { // Check if head is at the end of the array
+        if (buffer_size == buffer_capacity - 1) { // Check if  you need to expand the array or loop around the back
             expand();
             buffer[head] = c;
             head++;
@@ -42,7 +42,7 @@ void CircBuf::insert(char c){
         }
     }
     else {
-        if (buffer_size == buffer_capacity) {
+        if (buffer_size == buffer_capacity) { // Check if the array is full, expand if so.
             expand();
         }
         buffer[head] = c;
@@ -54,8 +54,8 @@ void CircBuf::insert(char c){
 void CircBuf::insert(const char* c, size_t sz) {
     size_t temp_counter = 0;
     while (temp_counter < sz) {
-        if (head == buffer_capacity - 1) {
-            if (buffer_size == buffer_capacity) {
+        if (head == buffer_capacity - 1) { // Check if head is at the end of the buffer
+            if (buffer_size == buffer_capacity) {  // Check if  you need to expand the buffer or loop around the back
                 expand();
                 buffer[head] = c[temp_counter];
                 head++;
@@ -68,7 +68,7 @@ void CircBuf::insert(const char* c, size_t sz) {
             }
         }
         else {
-            if (buffer_size == buffer_capacity) {
+            if (buffer_size == buffer_capacity) { // Check if the buffer is full, expand if so.
                 expand();
             }
             buffer[head] = c[temp_counter];
@@ -80,8 +80,8 @@ void CircBuf::insert(const char* c, size_t sz) {
 }
 void CircBuf::insert(const string& str){
      for(const char c : str) {
-        if (head == buffer_capacity - 1) {
-            if (buffer_size == buffer_capacity) {
+        if (head == buffer_capacity - 1) { // Check if head is at the end of the buffer
+            if (buffer_size == buffer_capacity) { // Check if  you need to expand the buffer or loop around the back
                 expand();
                 buffer[head] = c;
                 head++;
@@ -94,7 +94,7 @@ void CircBuf::insert(const string& str){
             }
         }
         else {
-            if (buffer_size == buffer_capacity) {
+            if (buffer_size == buffer_capacity) { // Check if the buffer is full, expand if so.
                 expand();
             }
             buffer[head] = c;
@@ -106,12 +106,12 @@ void CircBuf::insert(const string& str){
 
 char CircBuf::get(){
     char c = '\0';
-    if (buffer_size == 0) {
+    if (buffer_size == 0) { // Return empty char if buffer is empty
         return c;
     }
     else {
         c = buffer[tail];
-        if (tail == buffer_capacity - 1) {
+        if (tail == buffer_capacity - 1) { // Loop around the back if the tail is at the end of buffer
             tail = 0;
             buffer_size--;
         }
@@ -125,13 +125,13 @@ char CircBuf::get(){
 
 string CircBuf::get(size_t j){
     string s = "";
-    for (size_t i = 0; i < j; i++) {
+    for (size_t i = 0; i < j; i++) { // Return empty string if buffer is empty
         if (buffer_size == 0) {
             return s;
         }
         else {
             s.push_back(buffer[tail]);
-            if (tail == buffer_capacity - 1) {
+            if (tail == buffer_capacity - 1) { // Loop around the back if the tail is at the end of buffer
                 tail = 0;
                 buffer_size--;
             }
@@ -145,17 +145,17 @@ string CircBuf::get(size_t j){
 }
 
 string CircBuf::flush(){
-    string s = get(buffer_size);
+    string s = get(buffer_size); // Clear the entire buffer and return it
     return s;
 }
 
 string CircBuf::examine(){
     string s;
     s.push_back('[');
-    size_t end_digits = buffer_capacity - tail;
+    size_t end_digits = buffer_capacity - tail; // Check how many digits are after the tail
     size_t start_digits;
     size_t mid_digits;
-    if (end_digits > buffer_size) {
+    if (end_digits > buffer_size) { // Check if the amount of characters after the tail is more than the size of the buffer
         if (tail > 0) {
             start_digits = buffer_capacity - end_digits;
             mid_digits = buffer_size;
@@ -164,7 +164,7 @@ string CircBuf::examine(){
             for (i = 0; i < start_digits; i++) {
                 s.push_back('-');
             }
-            for (size_t j = 0; j < mid_digits; j++) {
+            for (size_t j = 0; j < mid_digits; j++) { // We know there are only characters in the middle of the buffer
                 s.push_back(buffer[i]);
                 i++;
             }
@@ -173,7 +173,7 @@ string CircBuf::examine(){
                 i++;
             }
         }
-        else {
+        else { // There are only characters at the start of the buffer
             start_digits = buffer_size;
             end_digits = buffer_capacity - buffer_size;
             size_t i;
@@ -186,14 +186,14 @@ string CircBuf::examine(){
             }
         }
     }
-    else {
+    else { // We know there are more characters at the end than there are spots in the buffer
         start_digits = buffer_size - end_digits;
         mid_digits = buffer_capacity - buffer_size;
         size_t i;
         for (i = 0; i < start_digits; i++) {
             s.push_back(buffer[i]);
         }
-        for (size_t j = 0; j < mid_digits; j++) {
+        for (size_t j = 0; j < mid_digits; j++) { // The characters are at the start and end of the buffer, not the middle.
             s.push_back('-');
             i++;
         }
@@ -206,15 +206,19 @@ string CircBuf::examine(){
     return s;
 }
 void CircBuf::shrink() {
+    buffer_capacity = 0;
+    while (buffer_capacity < buffer_size) { // Shrink the buffer size
+        buffer_capacity += CHUNK;
+    }
     char* temp = new char[buffer_capacity];
-    size_t temp_counter = tail;
+    size_t temp_counter = tail; // This counter tells you where to start in the current buffer
     size_t i;
-    for (i = 0; i < buffer_size; i++) {
+    for (i = 0; i < buffer_size; i++) { // Copy over only elements in the buffer
         temp[i] = buffer[temp_counter];
         if (temp_counter < buffer_capacity - 1){
             temp_counter++;
         }
-        else {
+        else { // Rotate counter to the back once you hit the end of the buffer
             temp_counter = 0;
         }
     }
@@ -222,23 +226,19 @@ void CircBuf::shrink() {
     tail = 0;
     delete[] buffer;
     buffer = temp;
-    buffer_capacity = 0;
-    while (buffer_capacity < buffer_size) {
-        buffer_capacity += CHUNK;
-    }
 }   // Reduces the unused space in the buffer.
 
 void CircBuf::expand() {
-    size_t temp_cap = buffer_capacity + CHUNK;
+    size_t temp_cap = buffer_capacity + CHUNK; // Expand the buffer size
     char* temp = new char[temp_cap];
-    size_t temp_counter = tail;
+    size_t temp_counter = tail; // This counter tells you where to start in the current buffer
     size_t i;
-    for (i = 0; i < buffer_size; i++) {
+    for (i = 0; i < buffer_size; i++) { // Copy over only elements in the buffer
         temp[i] = buffer[temp_counter];
         if (temp_counter < buffer_capacity - 1){
             temp_counter++;
         }
-        else {
+        else { // Rotate counter to the back once you hit the end of the buffer
             temp_counter = 0;
         }
     }
